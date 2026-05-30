@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoomMode {
+  OFFLINE
+  ONLINE
+}
+
+enum RoomPhase {
+  LOBBY
+  REVEAL
+  OFFLINE_DISCUSSION
+  CLUE_SUBMISSION
+  CLUE_REVIEW
+  VOTING
+  RESULTS
+  ENDED
+}
+
+enum PlayerStatus {
+  CONNECTED
+  DISCONNECTED
+}
+
+enum VoteKind {
+  PLAYER
+  SKIP
+}
+
+model Room {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  hostPlayerId   String?
+  mode           RoomMode  @default(OFFLINE)
+  phase          RoomPhase @default(LOBBY)
+  totalPlayers   Int       @default(6)
+  imposterCount  Int       @default(1)
+  shuffleSeedHash String?
+  currentRoundId String?   @unique
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  players        Player[]
+  wordPairs      WordPair[]
+  rounds         Round[]
+  currentRound   Round?    @relation("CurrentRound", fields: [currentRoundId], references: [id])
+
+  @@index([code])
+}
+
+model Player {
+  id        String       @id @default(cuid())
+  roomId    String
+  name      String
+  isHost    Boolean      @default(false)
+  status    PlayerStatus @default(CONNECTED)
+  joinedAt  DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  room        Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  assignments Assignment[]
+  clues       Clue[]
+  votes       Vote[]       @relation("VotesCast")
+  votesTarget Vote[]       @relation("VotesTarget")
+
+  @@unique([roomId, name])
+  @@index([roomId])
+}
+
+model WordPair {
+  id           String   @id @default(cuid())
+  roomId       String
+  normalWord   String
+  imposterWord String
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  rounds Round[]
+
+  @@index([roomId, position])
+}
+
+model Round {
+  id           String   @id @default(cuid())
+  roomId       String
+  number       Int
+  wordPairId   String
+  seedHash     String
+  startedAt    DateTime @default(now())
+  endedAt      DateTime?
+
+  room             Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  wordPair         WordPair     @relation(fields: [wordPairId], references: [id])
+  currentForRoom   Room?        @relation("CurrentRound")
+  assignments      Assignment[]
+  clues            Clue[]
+  votes            Vote[]
+
+  @@unique([roomId, number])
+  @@index([roomId])
+}
+
+model Assignment {
+  id        String   @id @default(cuid())
+  roundId   String
+  playerId  String
+  isImposter Boolean
+  word      String
+  viewedAt  DateTime?
+
+  round  Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, playerId])
+  @@index([playerId])
+}
+
+model Clue {
+  id        String   @id @default(cuid())
+  roundId   String
+  playerId  String
+  value     String
+  createdAt DateTime @default(now())
+
+  round  Round  @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([roundId, playerId])
+}
+
+model Vote {
+  id             String   @id @default(cuid())
+  roundId        String
+  voterId        String
+  targetPlayerId String?
+  kind           VoteKind
+  createdAt      DateTime @default(now())
+
+  round  Round   @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  voter  Player  @relation("VotesCast", fields: [voterId], references: [id], onDelete: Cascade)
+  target Player? @relation("VotesTarget", fields: [targetPlayerId], references: [id], onDelete: SetNull)
+
+  @@unique([roundId, voterId])
+}
