@@ -1,6 +1,6 @@
 import { type ButtonHTMLAttributes } from "react";
 
-type ButtonVariant = "primary" | "outline" | "ghost" | "clay";
+type ButtonVariant = "primary" | "outline" | "ghost" | "clay" | "destructive";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
@@ -10,7 +10,9 @@ const variants: Record<ButtonVariant, string> = {
   ghost:
     "text-[var(--text-muted)] hover:bg-white/70",
   clay:
-    "bg-[var(--clay-light)] text-[var(--clay-solid)] hover:bg-[#f2ded8]"
+    "bg-[var(--clay-light)] text-[var(--clay-solid)] hover:bg-[#f2ded8]",
+  destructive:
+    "bg-[var(--clay-solid)] text-white hover:bg-[var(--clay-solid)]/90 shadow-[var(--shadow-soft)]"
 };
 
 export function Button({

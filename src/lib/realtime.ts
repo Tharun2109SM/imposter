@@ -11,3 +11,9 @@ export function setSocketServer(io: SocketServer) {
 export function emitRoomUpdate(roomCode: string, message?: string) {
   globalForRealtime.imposterIo?.to(roomCode).emit("room:updated", message);
 }
+
+export function emitRoomDeleted(roomCode: string) {
+  const io = globalForRealtime.imposterIo;
+  io?.to(roomCode).emit("room:deleted", "room_closed");
+  io?.in(roomCode).socketsLeave(roomCode);
+}

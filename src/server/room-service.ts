@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createShuffleSeed, hashSeed } from "@/lib/game/random";
@@ -5,7 +7,7 @@ import { createRoomCode, normalizeRoomCode } from "@/lib/game/room-code";
 import { assignWords } from "@/lib/game/assignment";
 import { playerNameSchema, roomSettingsSchema, wordPairSchema } from "@/lib/game/validation";
 import { clueSchema } from "@/lib/game/validation";
-import { emitRoomUpdate } from "@/lib/realtime";
+import { emitRoomDeleted, emitRoomUpdate } from "@/lib/realtime";
 import type { Player, WordPair } from "@/lib/game/types";
 
 const defaultPairs = [
@@ -14,9 +16,17 @@ const defaultPairs = [
   { normalWord: "Book", imposterWord: "Kindle", position: 2 }
 ];
 
+const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
+
+export function getHostDeleteCookieName(roomCode: string) {
+  return `imposter-host-delete-${normalizeRoomCode(roomCode)}`;
+}
+
 export async function createRoom(hostNameValue: string) {
   const hostName = playerNameSchema.parse(hostNameValue);
   let roomCode = createRoomCode();
+  const now = new Date();
+  const hostDeleteToken = randomUUID();
 
   for (let attempts = 0; attempts < 5; attempts += 1) {
     const existing = await prisma.room.findUnique({ where: { code: roomCode } });
@@ -27,6 +37,8 @@ export async function createRoom(hostNameValue: string) {
   const room = await prisma.room.create({
     data: {
       code: roomCode,
+      hostDeleteToken,
+      expiresAt: new Date(now.getTime() + ROOM_TTL_MS),
       players: {
         create: {
           name: hostName,
@@ -44,6 +56,15 @@ export async function createRoom(hostNameValue: string) {
   await prisma.room.update({
     where: { id: room.id },
     data: { hostPlayerId: host.id }
+  });
+
+  const cookieStore = await cookies();
+  cookieStore.set(getHostDeleteCookieName(room.code), hostDeleteToken, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 24 * 60 * 60
   });
 
   redirect(`/room/${room.code}?player=${host.id}`);
@@ -431,4 +452,58 @@ export async function exitGame(roomCode: string) {
   ]);
 
   emitRoomUpdate(room.code, "ended_by_host");
+}
+
+export type DeleteRoomResult =
+  | { ok: true }
+  | { ok: false; error: "ROOM_NOT_FOUND" | "UNAUTHORIZED" | "DATABASE_FAILURE" };
+
+export async function deleteRoom(
+  roomCode: string,
+  requesterPlayerId: string,
+  requesterHostDeleteToken: string | undefined
+): Promise<DeleteRoomResult> {
+  const code = normalizeRoomCode(roomCode);
+
+  try {
+    const room = await prisma.room.findUnique({
+      where: { code },
+      select: {
+        id: true,
+        code: true,
+        hostPlayerId: true,
+        hostDeleteToken: true,
+        phase: true
+      }
+    });
+
+    if (!room) {
+      return { ok: false, error: "ROOM_NOT_FOUND" };
+    }
+
+    if (
+      !requesterPlayerId ||
+      room.hostPlayerId !== requesterPlayerId ||
+      !requesterHostDeleteToken ||
+      room.hostDeleteToken !== requesterHostDeleteToken
+    ) {
+      console.warn(`Unauthorized room deletion blocked for room ${room.code}`);
+      return { ok: false, error: "UNAUTHORIZED" };
+    }
+
+    await prisma.room.delete({
+      where: { id: room.id }
+    });
+
+    console.log(`Room ${room.code} deleted by host ${requesterPlayerId} from phase ${room.phase}`);
+    emitRoomDeleted(room.code);
+
+    const cookieStore = await cookies();
+    cookieStore.delete(getHostDeleteCookieName(room.code));
+
+    return { ok: true };
+  } catch (error) {
+    console.error(`Failed to delete room ${code}`, error);
+    return { ok: false, error: "DATABASE_FAILURE" };
+  }
 }

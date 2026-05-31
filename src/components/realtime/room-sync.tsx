@@ -57,7 +57,9 @@ export function RoomSync({
         });
 
         if (!response.ok) {
-          router.refresh();
+          socket?.emit("room:leave", roomCode);
+          socket?.disconnect();
+          router.push("/?message=room_closed");
           return;
         }
 
@@ -84,6 +86,12 @@ export function RoomSync({
         }
 
         router.refresh();
+      });
+
+      socket.on("room:deleted", () => {
+        socket?.emit("room:leave", roomCode);
+        socket?.disconnect();
+        router.push("/?message=room_closed");
       });
 
       window.addEventListener("room:trigger-refresh", handleTriggerRefresh);

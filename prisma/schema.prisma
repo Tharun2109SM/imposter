@@ -42,16 +42,22 @@ model Room {
   totalPlayers   Int       @default(6)
   imposterCount  Int       @default(1)
   shuffleSeedHash String?
+  hostDeleteToken String
   currentRoundId String?   @unique
   createdAt      DateTime  @default(now())
+  /// Rooms expire 24 hours after creation. Cleanup only removes expired rooms
+  /// that are not currently active, then database cascades remove owned data.
+  expiresAt      DateTime
   updatedAt      DateTime  @updatedAt
 
   players        Player[]
   wordPairs      WordPair[]
   rounds         Round[]
-  currentRound   Round?    @relation("CurrentRound", fields: [currentRoundId], references: [id])
+  currentRound   Round?    @relation("CurrentRound", fields: [currentRoundId], references: [id], onDelete: SetNull)
 
   @@index([code])
+  @@index([expiresAt])
+  @@index([expiresAt, updatedAt])
 }
 
 model Player {
@@ -98,7 +104,7 @@ model Round {
   endedAt      DateTime?
 
   room             Room         @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  wordPair         WordPair     @relation(fields: [wordPairId], references: [id])
+  wordPair         WordPair     @relation(fields: [wordPairId], references: [id], onDelete: Cascade)
   currentForRoom   Room?        @relation("CurrentRound")
   assignments      Assignment[]
   clues            Clue[]

@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { advancePhaseAction, startRoundAction, submitVoteAction } from "@/server/actions/room-actions";
-import { getGameRoom } from "@/server/room-service";
+import { getGameRoom, getHostDeleteCookieName } from "@/server/room-service";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { RevealCard } from "@/components/game/reveal-card";
@@ -9,6 +10,7 @@ import { ClueForm } from "@/components/game/clue-form";
 import { RoomSync } from "@/components/realtime/room-sync";
 import { formatRoomCode } from "@/lib/game/room-code";
 import { ExitToLobbyButton, CompleteGameButton } from "@/components/game/game-navigation";
+import { DeleteRoomButton } from "@/components/room/delete-room-button";
 
 type Props = {
   params: Promise<{ code: string }>;
@@ -19,6 +21,7 @@ export default async function GamePage({ params, searchParams }: Props) {
   const { code } = await params;
   const { player } = await searchParams;
   const room = await getGameRoom(code, player);
+  const cookieStore = await cookies();
 
   if (!room || !room.currentRound) notFound();
 
@@ -32,6 +35,9 @@ export default async function GamePage({ params, searchParams }: Props) {
   const hostPlayerId = room.hostPlayerId ?? room.players.find((roomPlayer) => roomPlayer.isHost)?.id;
   const currentPlayerId = player ?? hostPlayerId ?? room.players[0]?.id;
   const isHost = currentPlayerId === hostPlayerId || !player;
+  const hasHostDeleteToken =
+    cookieStore.get(getHostDeleteCookieName(room.code))?.value === room.hostDeleteToken;
+  const deleteRequesterPlayerId = player && player === hostPlayerId && hasHostDeleteToken ? player : null;
   const currentAssignment =
     room.currentRound.assignments.find((assignment) => assignment.playerId === currentPlayerId) ??
     room.currentRound.assignments[0];
@@ -299,7 +305,10 @@ export default async function GamePage({ params, searchParams }: Props) {
         {formatRoomCode(room.code)}
       </div>
 
-      <div className="fixed right-5 top-5 z-40">
+      <div className="fixed right-5 top-5 z-40 flex gap-2">
+        {deleteRequesterPlayerId ? (
+          <DeleteRoomButton roomCode={room.code} requesterPlayerId={deleteRequesterPlayerId} compact />
+        ) : null}
         <ExitToLobbyButton
           isHost={isHost}
           roomCode={room.code}

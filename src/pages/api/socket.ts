@@ -27,6 +27,10 @@ export default function handler(_req: NextApiRequest, res: SocketResponse) {
       socket.on("room:refresh", (roomCode: string, message?: string) => {
         socket.to(roomCode).emit("room:updated", message);
       });
+
+      socket.on("room:leave", (roomCode: string) => {
+        socket.leave(roomCode);
+      });
     });
 
     res.socket.server.io = io;

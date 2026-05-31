@@ -1,8 +1,10 @@
 "use server";
 
+import { cookies } from "next/headers";
 import {
   advancePhase,
   createRoom,
+  deleteRoom,
   endGame,
   exitGame,
   joinRoom,
@@ -10,7 +12,8 @@ import {
   startRound,
   submitClue,
   submitVote,
-  updateSettings
+  updateSettings,
+  getHostDeleteCookieName
 } from "@/server/room-service";
 
 export async function createRoomAction(formData: FormData) {
@@ -53,3 +56,9 @@ export async function exitGameAction(roomCode: string) {
   await exitGame(roomCode);
 }
 
+export async function deleteRoomAction(roomCode: string, requesterPlayerId: string) {
+  const cookieStore = await cookies();
+  const hostDeleteToken = cookieStore.get(getHostDeleteCookieName(roomCode))?.value;
+
+  return deleteRoom(roomCode, requesterPlayerId, hostDeleteToken);
+}

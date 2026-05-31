@@ -30,6 +30,11 @@ export function LandingForms() {
             You were removed by the host.
           </div>
         )}
+        {message === "room_closed" && (
+          <div className="w-full max-w-md rounded-2xl bg-[var(--clay-light)] border border-[var(--clay-solid)]/20 px-5 py-3 text-center text-sm font-medium text-[var(--clay-solid)] animate-in fade-in slide-in-from-top-2 duration-300">
+            Room has been closed by the host.
+          </div>
+        )}
         <div>
           <h1 className="display-font text-[40px] leading-none text-[var(--text-main)] sm:text-6xl">
             A Quiet Game of Words.

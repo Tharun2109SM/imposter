@@ -1,11 +1,13 @@
 import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { Copy, Settings } from "lucide-react";
-import { getRoom } from "@/server/room-service";
+import { getHostDeleteCookieName, getRoom } from "@/server/room-service";
 import { startRoundAction } from "@/server/actions/room-actions";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { SettingsForm } from "@/components/room/settings-form";
 import { PlayerRoster } from "@/components/room/player-roster";
+import { DeleteRoomButton } from "@/components/room/delete-room-button";
 import { RoomSync } from "@/components/realtime/room-sync";
 import { formatRoomCode } from "@/lib/game/room-code";
 import type { Player, WordPair } from "@/lib/game/types";
@@ -19,6 +21,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
   const { code } = await params;
   const { player, message, exited } = await searchParams;
   const room = await getRoom(code);
+  const cookieStore = await cookies();
 
   if (!room) notFound();
 
@@ -30,6 +33,9 @@ export default async function RoomPage({ params, searchParams }: Props) {
   }
 
   const isHost = player ? room.hostPlayerId === player : true;
+  const hasHostDeleteToken =
+    cookieStore.get(getHostDeleteCookieName(room.code))?.value === room.hostDeleteToken;
+  const deleteRequesterPlayerId = player && room.hostPlayerId === player && hasHostDeleteToken ? player : null;
   const players = room.players.map((roomPlayer) => ({
     id: roomPlayer.id,
     name: roomPlayer.name,
@@ -101,6 +107,14 @@ export default async function RoomPage({ params, searchParams }: Props) {
                 imposterCount={room.imposterCount}
                 wordPairs={wordPairs}
               />
+              {deleteRequesterPlayerId ? (
+                <div className="mt-8 border-t border-[var(--border-cozy)] pt-6">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--clay-solid)]">
+                    Danger Zone
+                  </p>
+                  <DeleteRoomButton roomCode={room.code} requesterPlayerId={deleteRequesterPlayerId} />
+                </div>
+              ) : null}
             </Panel>
             <div className="space-y-4">
               <PlayerRoster players={players} isHostViewer={true} roomCode={room.code} />
