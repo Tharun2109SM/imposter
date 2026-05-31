@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { Copy, Settings } from "lucide-react";
-import { getHostDeleteCookieName, getRoom } from "@/server/room-service";
+import { canDeleteRoomFromBrowser, getHostDeleteCookieName, getRoom } from "@/server/room-service";
 import { startRoundAction } from "@/server/actions/room-actions";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
@@ -33,9 +33,12 @@ export default async function RoomPage({ params, searchParams }: Props) {
   }
 
   const isHost = player ? room.hostPlayerId === player : true;
-  const hasHostDeleteToken =
-    cookieStore.get(getHostDeleteCookieName(room.code))?.value === room.hostDeleteToken;
-  const deleteRequesterPlayerId = player && room.hostPlayerId === player && hasHostDeleteToken ? player : null;
+  const canDeleteRoom = await canDeleteRoomFromBrowser(
+    room.code,
+    player,
+    cookieStore.get(getHostDeleteCookieName(room.code))?.value
+  );
+  const deleteRequesterPlayerId = player && canDeleteRoom ? player : null;
   const players = room.players.map((roomPlayer) => ({
     id: roomPlayer.id,
     name: roomPlayer.name,

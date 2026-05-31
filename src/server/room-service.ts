@@ -22,6 +22,26 @@ export function getHostDeleteCookieName(roomCode: string) {
   return `imposter-host-delete-${normalizeRoomCode(roomCode)}`;
 }
 
+export async function canDeleteRoomFromBrowser(
+  roomCode: string,
+  requesterPlayerId: string | undefined,
+  requesterHostDeleteToken: string | undefined
+) {
+  if (!requesterPlayerId || !requesterHostDeleteToken) {
+    return false;
+  }
+
+  const room = await prisma.room.findUnique({
+    where: { code: normalizeRoomCode(roomCode) },
+    select: {
+      hostPlayerId: true,
+      hostDeleteToken: true
+    }
+  });
+
+  return room?.hostPlayerId === requesterPlayerId && room.hostDeleteToken === requesterHostDeleteToken;
+}
+
 export async function createRoom(hostNameValue: string) {
   const hostName = playerNameSchema.parse(hostNameValue);
   let roomCode = createRoomCode();

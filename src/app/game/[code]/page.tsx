@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { advancePhaseAction, startRoundAction, submitVoteAction } from "@/server/actions/room-actions";
-import { getGameRoom, getHostDeleteCookieName } from "@/server/room-service";
+import { canDeleteRoomFromBrowser, getGameRoom, getHostDeleteCookieName } from "@/server/room-service";
 import { Button } from "@/components/ui/button";
 import { Panel } from "@/components/ui/panel";
 import { RevealCard } from "@/components/game/reveal-card";
@@ -35,9 +35,12 @@ export default async function GamePage({ params, searchParams }: Props) {
   const hostPlayerId = room.hostPlayerId ?? room.players.find((roomPlayer) => roomPlayer.isHost)?.id;
   const currentPlayerId = player ?? hostPlayerId ?? room.players[0]?.id;
   const isHost = currentPlayerId === hostPlayerId || !player;
-  const hasHostDeleteToken =
-    cookieStore.get(getHostDeleteCookieName(room.code))?.value === room.hostDeleteToken;
-  const deleteRequesterPlayerId = player && player === hostPlayerId && hasHostDeleteToken ? player : null;
+  const canDeleteRoom = await canDeleteRoomFromBrowser(
+    room.code,
+    player,
+    cookieStore.get(getHostDeleteCookieName(room.code))?.value
+  );
+  const deleteRequesterPlayerId = player && canDeleteRoom ? player : null;
   const currentAssignment =
     room.currentRound.assignments.find((assignment) => assignment.playerId === currentPlayerId) ??
     room.currentRound.assignments[0];
