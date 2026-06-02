@@ -49,21 +49,22 @@ export default async function GamePage({ params, searchParams }: Props) {
   const isFinalRound = room.currentRound.number >= room.wordPairs.length;
 
   return (
-    <main className={room.phase === "REVEAL" ? "min-h-screen bg-[#242220]" : "min-h-screen"}>
+    <main className={`ambient-bg party-shell page-enter ${room.phase === "REVEAL" ? "min-h-screen" : "min-h-screen"}`}>
       <RoomSync roomCode={room.code} playerId={currentPlayerId} broadcastOnMount={isHost} />
       {room.phase === "REVEAL" ? (
-        <section className="flex min-h-screen flex-col items-center justify-center px-5 py-10 text-center text-[#f7efe4]">
+        <section className="flex min-h-screen flex-col items-center justify-center px-5 py-10 text-center text-white">
           {isHost ? (
             <>
-              <h1 className="display-font text-4xl mb-4">Players are viewing their secret words</h1>
-              <p className="mb-8 text-lg text-[#cfc5b9]">As the Host (Moderator), you do not participate in gameplay.</p>
+              <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[var(--amber-light)]">Quiet reveal</p>
+              <h1 className="display-font mb-4 text-6xl leading-tight drop-shadow-md">The secrets are being dealt.</h1>
+              <p className="mb-8 max-w-xl text-lg font-bold leading-7 text-white/72">Give the table a moment.</p>
               <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
-                <Button type="submit">Everyone Has Seen Their Word</Button>
+                <Button type="submit" className="min-h-14 px-7">Everyone Has Seen Their Word</Button>
               </form>
             </>
           ) : (
             <>
-              <p className="mb-8 text-lg">Keep your screen shielded.</p>
+              <p className="mb-8 text-lg text-[#d8d0c5]">Keep your screen shielded.</p>
               <RevealCard word={currentAssignment.word} />
               <p className="mt-8 text-sm text-[#cfc5b9]">Release your touch to hide the card.</p>
               <p className="mt-8 text-sm text-[#cfc5b9]">Waiting for the host to continue.</p>
@@ -97,9 +98,9 @@ export default async function GamePage({ params, searchParams }: Props) {
             <span className="text-sm font-semibold text-[var(--text-muted)]">Round {room.currentRound.number}</span>
           </header>
           <div className="flex flex-1 flex-col items-center justify-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Round in Progress</p>
-            <h1 className="mt-4 font-mono text-7xl font-bold tabular-nums sm:text-[80px]">04:20</h1>
-            <p className="mt-4 text-[var(--text-muted)]">Discuss in your physical space. Vote by pointing at each other.</p>
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-white/70">Round in Progress</p>
+            <h1 className="mt-4 font-mono text-7xl font-black tabular-nums text-white drop-shadow-md sm:text-[96px]">04:20</h1>
+            <p className="mt-5 max-w-lg font-bold leading-7 text-white/72">Talk it out. Someone is bluffing.</p>
             {isHost ? (
               <Panel className="mt-10 w-full border-dashed border-[var(--clay-solid)] p-5 text-left">
                 <details>
@@ -122,7 +123,7 @@ export default async function GamePage({ params, searchParams }: Props) {
           </div>
           {isHost ? (
             <form action={advancePhaseAction.bind(null, room.code)} className="sticky bottom-0 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent py-4">
-              <Button type="submit" className="w-full">End Round & Reveal Roles</Button>
+              <Button type="submit" className="min-h-14 w-full">End Round & Reveal Roles</Button>
             </form>
           ) : null}
         </section>
@@ -131,9 +132,9 @@ export default async function GamePage({ params, searchParams }: Props) {
       {room.phase === "CLUE_SUBMISSION" ? (
         <section className="flex min-h-screen items-center justify-center px-5 py-10">
           {isHost ? (
-            <div className="mx-auto max-w-xl text-center">
-              <h1 className="display-font text-4xl">Waiting for clues...</h1>
-              <p className="mt-3 text-[var(--text-muted)]">
+            <div className="soft-enter mx-auto max-w-xl text-center">
+              <h1 className="display-font text-5xl leading-tight">Waiting for clues...</h1>
+              <p className="mt-4 leading-7 text-[var(--text-muted)]">
                 Players are writing their clues. As the Host, you do not submit clues.
               </p>
               <div className="mt-8 space-y-2 text-left">
@@ -143,7 +144,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 {room.players.filter(p => !p.isHost).map((p) => {
                   const hasSubmitted = clueByPlayer.has(p.id);
                   return (
-                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-cozy)] bg-white px-4 py-2">
+                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-cozy)] bg-white px-4 py-3 shadow-[var(--shadow-soft)]">
                       <span>{p.name}</span>
                       <span className={hasSubmitted ? "text-[var(--sage-solid)] font-semibold" : "text-[var(--text-muted)]"}>
                         {hasSubmitted ? "Submitted" : "Thinking..."}
@@ -153,7 +154,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 })}
               </div>
               <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
-                <Button type="submit" className="w-full">Review Clues (Force Advance)</Button>
+                <Button type="submit" className="min-h-14 w-full">Review Clues (Force Advance)</Button>
               </form>
             </div>
           ) : (
@@ -164,18 +165,18 @@ export default async function GamePage({ params, searchParams }: Props) {
 
       {room.phase === "CLUE_REVIEW" ? (
         <section className="mx-auto min-h-screen max-w-6xl px-5 py-8 sm:px-8">
-          <header className="mb-8 flex items-center justify-between">
+          <header className="mb-10 flex items-center justify-between gap-6">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">The Clue Board</p>
-              <h1 className="display-font text-4xl">Review the clues.</h1>
+              <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--amber-light)]">The Clue Board</p>
+              <h1 className="display-font mt-2 text-5xl leading-tight text-white drop-shadow-md">Read between the words.</h1>
             </div>
-            <span className="font-mono text-lg font-semibold text-[var(--clay-solid)]">02:40</span>
+            <span className="rounded-full bg-[var(--clay-light)] px-4 py-2 font-mono text-lg font-semibold text-[var(--clay-solid)]">02:40</span>
           </header>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {room.players.filter(p => !p.isHost).map((roomPlayer) => {
               const clue = clueByPlayer.get(roomPlayer.id);
               return (
-                <Panel key={roomPlayer.id} className="min-h-36 p-6 transition hover:scale-[1.02] hover:shadow-[var(--shadow-hover)]">
+                <Panel key={roomPlayer.id} className="glass-card soft-enter min-h-40 p-6 transition hover:-translate-y-1 hover:rotate-[0.4deg] hover:shadow-[var(--shadow-hover)]">
                   <span className="text-sm font-semibold text-[var(--text-muted)]">{roomPlayer.name}</span>
                   <p className="display-font mt-5 text-3xl italic">{clue ? `"${clue}"` : "Thinking..."}</p>
                 </Panel>
@@ -184,7 +185,7 @@ export default async function GamePage({ params, searchParams }: Props) {
           </div>
           {isHost ? (
             <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
-              <Button type="submit" className="w-full">Open Voting</Button>
+              <Button type="submit" className="min-h-14 w-full">Open Voting</Button>
             </form>
           ) : null}
         </section>
@@ -192,9 +193,9 @@ export default async function GamePage({ params, searchParams }: Props) {
 
       {room.phase === "VOTING" ? (
         <section className="mx-auto min-h-screen max-w-6xl px-5 py-8 sm:px-8">
-          <header className="mb-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Cast Your Vote</p>
-            <h1 className="display-font text-4xl">
+          <header className="mb-10">
+            <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--amber-light)]">Cast Your Vote</p>
+            <h1 className="display-font mt-2 text-5xl leading-tight text-white drop-shadow-md">
               {isHost ? "Players are voting." : "Identify the Imposter, or choose to skip."}
             </h1>
           </header>
@@ -210,7 +211,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 {room.players.filter(p => !p.isHost).map((p) => {
                   const hasVoted = room.currentRound?.votes.some(v => v.voterId === p.id);
                   return (
-                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-cozy)] bg-white px-4 py-2">
+                    <div key={p.id} className="flex items-center justify-between rounded-xl border border-[var(--border-cozy)] bg-white px-4 py-3 shadow-[var(--shadow-soft)]">
                       <span>{p.name}</span>
                       <span className={hasVoted ? "text-[var(--sage-solid)] font-semibold" : "text-[var(--text-muted)]"}>
                         {hasVoted ? "Voted" : "Deciding..."}
@@ -220,18 +221,18 @@ export default async function GamePage({ params, searchParams }: Props) {
                 })}
               </div>
               <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
-                <Button type="submit" className="w-full">Reveal Results (Force Advance)</Button>
+                <Button type="submit" className="min-h-14 w-full">Reveal Results (Force Advance)</Button>
               </form>
             </div>
           ) : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {room.players.filter(p => !p.isHost).map((roomPlayer) => (
-                  <Panel key={roomPlayer.id} className="p-5">
-                    <h2 className="font-semibold">{roomPlayer.name}</h2>
+                  <Panel key={roomPlayer.id} className="glass-card soft-enter p-5 transition hover:-translate-y-1 hover:rotate-[0.5deg] hover:shadow-[var(--shadow-hover)]">
+                    <h2 className="text-lg font-semibold">{roomPlayer.name}</h2>
                     <p className="mt-1 text-sm text-[var(--text-muted)]">[{clueByPlayer.get(roomPlayer.id) ?? "No clue"}]</p>
                     <form action={submitVoteAction.bind(null, room.code, currentPlayerId, roomPlayer.id)}>
-                      <Button type="submit" variant="outline" className="mt-5 w-full">
+                      <Button type="submit" variant="outline" className="mt-5 min-h-12 w-full">
                         Vote {roomPlayer.name}
                       </Button>
                     </form>
@@ -249,26 +250,27 @@ export default async function GamePage({ params, searchParams }: Props) {
       ) : null}
 
       {room.phase === "RESULTS" ? (
-        <section className="mx-auto flex min-h-screen max-w-4xl flex-col justify-center px-5 py-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Round Reveal</p>
-          <h1 className="display-font mt-3 text-5xl text-[var(--clay-solid)]">
+        <section className="relative mx-auto flex min-h-screen max-w-4xl flex-col justify-center px-5 py-10 text-center">
+          <div className="pointer-events-none absolute inset-0 confetti-dots opacity-60" />
+          <p className="relative text-xs font-black uppercase tracking-[0.16em] text-[var(--amber-light)]">Round Reveal</p>
+          <h1 className="relative display-font mt-4 text-5xl leading-tight text-white drop-shadow-md sm:text-7xl">
             The Imposter was: {imposters.map((assignment) => assignment.player.name.toUpperCase()).join(", ")}
           </h1>
-          <Panel className="mt-8 grid grid-cols-2 overflow-hidden p-0">
-            <div className="border-r border-[var(--border-cozy)] p-6">
+          <Panel className="glass-card soft-enter relative mt-9 grid overflow-hidden p-0 sm:grid-cols-2">
+            <div className="border-b border-[var(--border-cozy)] p-7 sm:border-b-0 sm:border-r">
               <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Normal Word</p>
-              <p className="display-font mt-2 text-4xl">{room.currentRound.wordPair.normalWord}</p>
+              <p className="display-font mt-3 text-5xl">{room.currentRound.wordPair.normalWord}</p>
             </div>
-            <div className="p-6">
+            <div className="p-7">
               <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Imposter Word</p>
-              <p className="display-font mt-2 text-4xl">{room.currentRound.wordPair.imposterWord}</p>
+              <p className="display-font mt-3 text-5xl">{room.currentRound.wordPair.imposterWord}</p>
             </div>
           </Panel>
-          <Panel className="mt-6 p-5 text-left">
+          <Panel className="mt-6 p-6 text-left">
             <p className="mb-4 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Results & Roles</p>
             <div className="space-y-3">
               {room.currentRound.assignments.map((assignment) => (
-                <div key={assignment.id} className="flex items-center justify-between rounded-xl bg-[#fffdf9] px-4 py-3">
+                <div key={assignment.id} className="flex items-center justify-between rounded-xl bg-[#fffdf9] px-4 py-3.5">
                   <span>{assignment.player.name}</span>
                   <span className={assignment.isImposter ? "text-[var(--clay-solid)]" : "text-[var(--sage-solid)]"}>
                     {assignment.isImposter ? "Imposter" : "Normal Player"}
@@ -284,7 +286,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 </div>
               ) : (
                 <form action={startRoundAction.bind(null, room.code)} className="mt-8">
-                  <Button type="submit" className="w-full">Next Round Setup</Button>
+                  <Button type="submit" className="min-h-14 w-full">Next Round Setup</Button>
                 </form>
               )
             ) : (

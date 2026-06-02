@@ -4,15 +4,15 @@ type ButtonVariant = "primary" | "outline" | "ghost" | "clay" | "destructive";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-[var(--sage-solid)] text-white hover:bg-[var(--sage-hover)] shadow-[var(--shadow-soft)]",
+    "bg-[var(--navy-solid)] text-white shadow-[var(--shadow-soft)] hover:bg-[var(--sage-hover)] hover:shadow-[0_0_36px_rgba(245,166,35,0.22)]",
   outline:
-    "border border-[var(--border-cozy)] bg-white text-[var(--text-main)] hover:bg-[#f4efeb]",
+    "border border-[var(--border-cozy)] bg-[#fffaf0] text-[var(--text-main)] shadow-[var(--shadow-soft)] hover:border-[#edae73] hover:bg-white hover:shadow-[var(--shadow-hover)]",
   ghost:
-    "text-[var(--text-muted)] hover:bg-white/70",
+    "text-[var(--text-muted)] hover:bg-white/70 hover:text-[var(--text-main)]",
   clay:
-    "bg-[var(--clay-light)] text-[var(--clay-solid)] hover:bg-[#f2ded8]",
+    "bg-[var(--amber-light)] text-[var(--navy-solid)] hover:bg-[#ffe49a] hover:shadow-[var(--shadow-soft)]",
   destructive:
-    "bg-[var(--clay-solid)] text-white hover:bg-[var(--clay-solid)]/90 shadow-[var(--shadow-soft)]"
+    "bg-[var(--clay-solid)] text-white hover:bg-[var(--clay-solid)]/90 shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-hover)]"
 };
 
 export function Button({
@@ -22,7 +22,7 @@ export function Button({
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) {
   return (
     <button
-      className={`inline-flex min-h-12 items-center justify-center rounded-lg px-5 py-3 text-sm font-semibold transition duration-200 ${variants[variant]} ${className}`}
+      className={`pressable focus-ring inline-flex min-h-12 items-center justify-center rounded-2xl px-5 py-3 text-sm font-black ${variants[variant]} ${className}`}
       {...props}
     />
   );

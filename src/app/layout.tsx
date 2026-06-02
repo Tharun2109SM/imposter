@@ -14,8 +14,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Imposter",
-  description: "A quiet social deduction word game."
+  title: "Imposter.",
+  description: "A warm social deduction party game."
 };
 
 export default function RootLayout({

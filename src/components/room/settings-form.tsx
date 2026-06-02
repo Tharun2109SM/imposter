@@ -22,7 +22,7 @@ export function SettingsForm({ roomCode, mode, totalPlayers, imposterCount, word
   const tooManyImposters = imposterCount >= totalPlayers - 1;
 
   return (
-    <form action={action} className="space-y-8">
+    <form action={action} className="space-y-9">
       <input type="hidden" name="mode" value={activeMode} />
       <input type="hidden" name="pairCount" value={pairs.length} />
 
@@ -30,13 +30,13 @@ export function SettingsForm({ roomCode, mode, totalPlayers, imposterCount, word
         <p className="mb-3 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">
           Mode
         </p>
-        <div className="grid rounded-xl border border-[var(--border-cozy)] bg-[#fbf8f3] p-1 sm:w-72 sm:grid-cols-2">
+        <div className="grid rounded-xl border border-[var(--border-cozy)] bg-[#fbf8f3] p-1 shadow-inner sm:w-72 sm:grid-cols-2">
           {(["OFFLINE", "ONLINE"] as const).map((item) => (
             <button
               key={item}
               type="button"
               onClick={() => setActiveMode(item)}
-              className={`rounded-lg px-4 py-3 text-sm font-semibold transition ${
+              className={`pressable rounded-lg px-4 py-3 text-sm font-semibold ${
                 activeMode === item
                   ? "bg-[var(--sage-solid)] text-white"
                   : "text-[var(--text-muted)] hover:bg-white"
@@ -91,7 +91,7 @@ export function SettingsForm({ roomCode, mode, totalPlayers, imposterCount, word
           {pairs.map((pair, index) => (
             <div
               key={pair.id}
-              className="grid items-center gap-3 rounded-2xl border border-[var(--border-cozy)] bg-[#fffdf9] p-3 sm:grid-cols-[2rem_1fr_auto_1fr_auto]"
+              className="grid items-center gap-3 rounded-2xl border border-[var(--border-cozy)] bg-[#fffdf9] p-3 shadow-[0_1px_0_rgba(255,255,255,0.9)] transition duration-300 hover:border-[#ded5c8] hover:bg-white hover:shadow-[var(--shadow-soft)] sm:grid-cols-[2rem_1fr_auto_1fr_auto]"
             >
               <span className="text-sm text-[var(--text-muted)]">{index + 1}.</span>
               <input type="hidden" name={`pairId-${index}`} value={pair.id} />
@@ -102,7 +102,7 @@ export function SettingsForm({ roomCode, mode, totalPlayers, imposterCount, word
                 type="button"
                 aria-label="Remove word pair"
                 onClick={() => setPairs((current) => current.filter((_, pairIndex) => pairIndex !== index))}
-                className="inline-flex size-10 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--clay-light)] hover:text-[var(--clay-solid)]"
+                className="pressable inline-flex size-11 items-center justify-center rounded-lg text-[var(--text-muted)] hover:bg-[var(--clay-light)] hover:text-[var(--clay-solid)]"
               >
                 <X size={16} />
               </button>

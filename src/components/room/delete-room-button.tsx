@@ -66,7 +66,7 @@ export function DeleteRoomButton({
 
       {showConfirm ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2c2824]/40 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-          <Panel className="w-full max-w-sm space-y-6 border border-[var(--border-cozy)] bg-[#faf6f0] p-6 text-center shadow-2xl">
+          <Panel className="soft-enter w-full max-w-sm space-y-6 border border-[var(--border-cozy)] bg-[#faf6f0] p-6 text-center shadow-2xl">
             <div>
               <h3 className="display-font text-2xl text-[var(--clay-solid)]">Delete this room?</h3>
               <p className="mt-3 whitespace-pre-line text-sm text-[var(--text-muted)]">

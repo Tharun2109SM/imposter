@@ -3,7 +3,7 @@ import { type InputHTMLAttributes } from "react";
 export function Input({ className = "", ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`focus-ring h-12 w-full rounded-lg border border-[var(--border-cozy)] bg-white px-4 text-[15px] text-[var(--text-main)] shadow-[var(--shadow-soft)] placeholder:text-[var(--text-placeholder)] ${className}`}
+      className={`focus-ring h-12 w-full rounded-2xl border border-[var(--border-cozy)] bg-white px-4 text-[15px] font-medium text-[var(--text-main)] shadow-[var(--shadow-soft)] transition duration-200 placeholder:text-[var(--text-placeholder)] hover:border-[#edae73] ${className}`}
       {...props}
     />
   );
@@ -19,7 +19,7 @@ export function Label({
   return (
     <label
       htmlFor={htmlFor}
-      className="mb-2 block text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]"
+      className="mb-2 block text-xs font-bold uppercase tracking-[0.08em] text-[var(--text-muted)]"
     >
       {children}
     </label>

@@ -1,6 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { Copy, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { canDeleteRoomFromBrowser, getHostDeleteCookieName, getRoom } from "@/server/room-service";
 import { startRoundAction } from "@/server/actions/room-actions";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Panel } from "@/components/ui/panel";
 import { SettingsForm } from "@/components/room/settings-form";
 import { PlayerRoster } from "@/components/room/player-roster";
 import { DeleteRoomButton } from "@/components/room/delete-room-button";
+import { CopyRoomLinkButton } from "@/components/room/copy-room-link-button";
 import { RoomSync } from "@/components/realtime/room-sync";
 import { formatRoomCode } from "@/lib/game/room-code";
 import type { Player, WordPair } from "@/lib/game/types";
@@ -54,7 +55,8 @@ export default async function RoomPage({ params, searchParams }: Props) {
   })) satisfies WordPair[];
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-6xl px-5 py-6 sm:px-8">
+    <main className="ambient-bg party-shell page-enter min-h-screen w-full px-5 py-6 sm:px-8">
+      <div className="mx-auto w-full max-w-6xl">
       <RoomSync roomCode={room.code} playerId={player} broadcastOnMount={true} />
 
       {message && (
@@ -80,16 +82,19 @@ export default async function RoomPage({ params, searchParams }: Props) {
         </div>
       )}
 
-      <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">Lobby Code</p>
-          <h1 className="display-font text-4xl text-[var(--text-main)]">{formatRoomCode(room.code)}</h1>
+      <header className="glass-panel mb-10 grid gap-5 rounded-[2.25rem] p-5 shadow-[var(--shadow-lifted)] sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="code-hero relative overflow-hidden rounded-[2rem] border border-white/35 bg-white/20 px-5 py-8 text-center text-white sm:px-8 sm:py-10 lg:text-left">
+          <div className="absolute -right-10 -top-10 size-32 rounded-full bg-[var(--amber-solid)]/30 blur-2xl" />
+          <p className="relative text-xs font-black uppercase tracking-[0.18em] text-[var(--amber-light)]">Lobby Code</p>
+          <h1 className="display-font relative mt-2 text-7xl leading-none text-white drop-shadow-md sm:text-8xl md:text-9xl">
+            {formatRoomCode(room.code)}
+          </h1>
+          <p className="relative mx-auto mt-4 max-w-xl text-sm font-bold leading-6 text-white/72 lg:mx-0">
+            Pass it around. The room is warming up.
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="min-h-10 px-4">
-            <Copy size={16} className="mr-2" />
-            Copy Link
-          </Button>
+        <div className="flex flex-wrap justify-center gap-2 lg:justify-end">
+          <CopyRoomLinkButton roomCode={room.code} />
           <Button variant="ghost" className="min-h-10 px-3" aria-label="Settings">
             <Settings size={18} />
           </Button>
@@ -99,9 +104,9 @@ export default async function RoomPage({ params, searchParams }: Props) {
       {isHost ? (
         <>
           <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-            <Panel className="p-6 sm:p-8">
-              <p className="mb-8 text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">
-                Game Configuration
+            <Panel className="glass-card p-6 sm:p-8 hover:shadow-[var(--shadow-hover)]">
+              <p className="mb-8 text-xs font-black uppercase tracking-[0.12em] text-[var(--clay-solid)]">
+                Host controls
               </p>
               <SettingsForm
                 roomCode={room.code}
@@ -121,8 +126,8 @@ export default async function RoomPage({ params, searchParams }: Props) {
             </Panel>
             <div className="space-y-4">
               <PlayerRoster players={players} isHostViewer={true} roomCode={room.code} />
-              <Panel className="p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.05em] text-[var(--text-muted)]">
+              <Panel className="glass-card p-6 hover:shadow-[var(--shadow-hover)]">
+                <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--clay-solid)]">
                   Fair Shuffle
                 </p>
                 <p className="mt-2 font-mono text-sm text-[var(--sage-solid)]">
@@ -135,24 +140,25 @@ export default async function RoomPage({ params, searchParams }: Props) {
             </div>
           </div>
 
-          <form action={startRoundAction.bind(null, room.code)} className="sticky bottom-0 mt-6 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent py-4">
-            <Button type="submit" className="w-full text-base">
+          <form action={startRoundAction.bind(null, room.code)} className="sticky bottom-0 mt-6 bg-gradient-to-t from-[#13213c] via-[#13213c]/80 to-transparent py-5">
+            <Button type="submit" className="min-h-16 w-full bg-[var(--amber-solid)] text-lg text-[var(--navy-solid)] shadow-[var(--shadow-lifted)] hover:bg-[#ffc64d] hover:shadow-[0_0_48px_rgba(245,166,35,0.42)] sm:text-xl">
               Deal Words & Start
             </Button>
           </form>
         </>
       ) : (
         <section className="mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center text-center">
-          <h1 className="display-font text-4xl">Waiting in the Lobby</h1>
-          <p className="mt-3 text-[var(--text-muted)]">The host is preparing the deck of cards.</p>
+          <h1 className="display-font text-5xl leading-tight">Waiting in the Lobby</h1>
+          <p className="mt-4 max-w-md leading-7 text-[var(--text-muted)]">The host is preparing the deck. Settle in while the table fills up.</p>
           <div className="mt-8 w-full">
             <PlayerRoster players={players} isHostViewer={false} roomCode={room.code} />
           </div>
-          <p className="mt-6 rounded-2xl bg-[var(--sage-light)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.05em] text-[var(--sage-solid)]">
+          <p className="mt-6 rounded-2xl bg-white/20 px-5 py-3 text-sm font-black uppercase tracking-[0.1em] text-white backdrop-blur">
             {room.mode === "OFFLINE" ? "Offline mode" : "Online mode"}
           </p>
         </section>
       )}
+      </div>
     </main>
   );
 }

@@ -7,7 +7,7 @@ export function Panel({
 }) {
   return (
     <section
-      className={`rounded-2xl border border-[var(--border-cozy)] bg-[var(--bg-card)] shadow-[var(--shadow-soft)] ${className}`}
+      className={`party-card rounded-[1.75rem] border border-[var(--border-cozy)] shadow-[var(--shadow-soft)] transition-shadow duration-300 ${className}`}
     >
       {children}
     </section>
