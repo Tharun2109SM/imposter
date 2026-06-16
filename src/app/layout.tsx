@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const instrument = Instrument_Serif({
@@ -25,7 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${instrument.variable} ${inter.variable}`}>{children}</body>
+      <body className={`${instrument.variable} ${inter.variable}`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
