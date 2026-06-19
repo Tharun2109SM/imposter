@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { normalizeRoomCode } from "@/lib/game/room-code";
 import { prisma } from "@/lib/prisma";
@@ -15,8 +16,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cod
       currentRoundId: true,
       currentRound: {
         select: {
-          number: true
+          number: true,
+          clues: {
+            select: { id: true, value: true, createdAt: true },
+            orderBy: { id: "asc" }
+          },
+          votes: {
+            select: { id: true, kind: true, targetPlayerId: true, createdAt: true },
+            orderBy: { id: "asc" }
+          }
         }
+      },
+      players: {
+        select: { id: true, status: true, updatedAt: true },
+        orderBy: { id: "asc" }
       },
       updatedAt: true
     }
@@ -26,5 +39,25 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cod
     return NextResponse.json({ error: "Room not found" }, { status: 404 });
   }
 
-  return NextResponse.json(room);
+  const stateRevision = createHash("sha256").update(JSON.stringify({
+    roomUpdatedAt: room.updatedAt,
+    players: room.players,
+    clues: room.currentRound?.clues ?? [],
+    votes: room.currentRound?.votes ?? []
+  })).digest("hex");
+
+  return NextResponse.json(
+    {
+      code: room.code,
+      phase: room.phase,
+      currentRoundId: room.currentRoundId,
+      currentRound: room.currentRound ? { number: room.currentRound.number } : null,
+      updatedAt: `${room.updatedAt.toISOString()}:${stateRevision}`
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate"
+      }
+    }
+  );
 }
