@@ -8,16 +8,20 @@ import type { WordPair } from "@/lib/game/types";
 
 type Props = {
   roomCode: string;
+  playerId: string;
   mode: "OFFLINE" | "ONLINE";
   totalPlayers: number;
   imposterCount: number;
   wordPairs: WordPair[];
 };
 
-export function SettingsForm({ roomCode, mode, totalPlayers, imposterCount, wordPairs }: Props) {
+export function SettingsForm({ roomCode, playerId, mode, totalPlayers, imposterCount, wordPairs }: Props) {
   const [pairs, setPairs] = useState(wordPairs);
   const [activeMode, setActiveMode] = useState(mode);
-  const action = useMemo(() => updateSettingsAction.bind(null, roomCode), [roomCode]);
+  const action = useMemo(
+    () => updateSettingsAction.bind(null, roomCode, playerId),
+    [playerId, roomCode]
+  );
   const tooManyImposters = imposterCount >= totalPlayers - 1;
   const labelClass = "mb-2 inline-flex w-fit rounded-full border-2 border-[#33211D] bg-[linear-gradient(135deg,#6F4A21,#33211D)] px-3 py-1 text-[0.68rem] font-black uppercase tracking-[0.13em] text-[#FFE08A] shadow-[3px_3px_0_rgba(51,33,29,0.25)] dark:border-[#0B080D] dark:bg-[linear-gradient(135deg,#FF9B42,#4E2A84)] dark:text-[#161218] dark:shadow-[3px_3px_0_#0B080D]";
   const inputClass = "!h-12 !rounded-2xl !border-2 !border-[#33211D] !bg-[#FFF9ED] !px-4 !font-black !text-[#33211D] !shadow-[inset_2px_2px_0_rgba(51,33,29,0.12),4px_4px_0_rgba(51,33,29,0.18)] placeholder:!text-[#8C5E4B] focus:!border-[#B94F37] focus:!shadow-[inset_2px_2px_0_rgba(51,33,29,0.12),0_0_0_4px_rgba(246,183,60,0.22),5px_5px_0_rgba(51,33,29,0.2)] dark:!border-[#0B080D] dark:!bg-[#F7EAD8] dark:!text-[#161218] dark:!shadow-[inset_2px_2px_0_rgba(11,8,13,0.12),4px_4px_0_#0B080D] dark:placeholder:!text-[#6C514B] dark:focus:!border-[#31D7C6] dark:focus:!shadow-[inset_2px_2px_0_rgba(11,8,13,0.12),0_0_0_4px_rgba(49,215,198,0.18),5px_5px_0_#0B080D]";

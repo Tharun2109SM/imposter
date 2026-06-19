@@ -31,13 +31,19 @@ export default async function RoomPage({ params, searchParams }: Props) {
     }
   }
 
-  const isHost = player ? room.hostPlayerId === player : true;
+  const currentPlayerId = player ?? room.hostPlayerId ?? room.players[0]?.id;
+  if (!currentPlayerId) notFound();
+  if (!player) {
+    redirect(`/room/${room.code}?player=${encodeURIComponent(currentPlayerId)}`);
+  }
+
+  const isHost = room.hostPlayerId === currentPlayerId;
   const canDeleteRoom = await canDeleteRoomFromBrowser(
     room.code,
-    player,
+    currentPlayerId,
     cookieStore.get(getHostDeleteCookieName(room.code))?.value
   );
-  const deleteRequesterPlayerId = player && canDeleteRoom ? player : null;
+  const deleteRequesterPlayerId = canDeleteRoom ? currentPlayerId : null;
   const players = room.players.map((roomPlayer) => ({
     id: roomPlayer.id,
     name: roomPlayer.name,
@@ -61,7 +67,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
   return (
     <main className="broadcast-lobby page-enter min-h-screen w-full overflow-hidden px-4 py-4 sm:px-6 lg:px-8">
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-7xl flex-col">
-      <RoomSync roomCode={room.code} playerId={player} broadcastOnMount={true} />
+      <RoomSync roomCode={room.code} playerId={currentPlayerId} broadcastOnMount={true} />
 
       {message && (
         <div className="mb-4 rounded-2xl border-2 border-[#33211D] bg-[#F6B73C] px-5 py-3 text-center text-sm font-black text-[#33211D] shadow-[4px_4px_0_#33211D] animate-in fade-in slide-in-from-top-2 duration-300">
@@ -78,7 +84,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
             <p className="mt-1 text-sm font-bold text-[#775348]">The signal is already live. You can rejoin the current round.</p>
           </div>
           <a
-            href={`/game/${room.code}?player=${player}`}
+            href={`/game/${room.code}?player=${currentPlayerId}`}
             className="broadcast-button rounded-xl px-5 py-2.5 text-sm font-black uppercase tracking-[0.08em] transition cursor-pointer"
           >
             Rejoin Signal
@@ -205,7 +211,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
             <section className="equipment-panel rounded-[1.7rem] p-4">
               <p className="mb-3 text-xs font-black uppercase tracking-[0.16em] text-[#B94F37] dark:text-[#FF9B42]">Broadcast Controls</p>
               <div className="grid gap-3 sm:grid-cols-3">
-                <form action={startRoundAction.bind(null, room.code)} className="sm:col-span-1">
+                <form action={startRoundAction.bind(null, room.code, currentPlayerId)} className="sm:col-span-1">
                   <button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-4 py-3 text-sm font-black uppercase tracking-[0.1em] transition">
                     Start Broadcast
                   </button>
@@ -227,6 +233,7 @@ export default async function RoomPage({ params, searchParams }: Props) {
                 <div className="mt-5">
                   <SettingsForm
                     roomCode={room.code}
+                    playerId={currentPlayerId}
                     mode={room.mode}
                     totalPlayers={room.totalPlayers}
                     imposterCount={room.imposterCount}

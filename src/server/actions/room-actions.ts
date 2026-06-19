@@ -24,16 +24,16 @@ export async function joinRoomAction(formData: FormData) {
   await joinRoom(String(formData.get("roomCode") ?? ""), String(formData.get("playerName") ?? ""));
 }
 
-export async function updateSettingsAction(roomCode: string, formData: FormData) {
-  await updateSettings(roomCode, formData);
+export async function updateSettingsAction(roomCode: string, playerId: string, formData: FormData) {
+  await updateSettings(roomCode, playerId, formData);
 }
 
-export async function startRoundAction(roomCode: string) {
-  await startRound(roomCode);
+export async function startRoundAction(roomCode: string, playerId: string) {
+  await startRound(roomCode, playerId);
 }
 
-export async function advancePhaseAction(roomCode: string) {
-  await advancePhase(roomCode);
+export async function advancePhaseAction(roomCode: string, playerId: string) {
+  await advancePhase(roomCode, playerId);
 }
 
 export async function endGameAction(roomCode: string) {

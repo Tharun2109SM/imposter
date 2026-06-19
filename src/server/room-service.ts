@@ -217,7 +217,7 @@ export async function getGameRoom(code: string, playerId?: string) {
   };
 }
 
-export async function updateSettings(roomCode: string, formData: FormData) {
+export async function updateSettings(roomCode: string, playerId: string, formData: FormData) {
   const wordPairs = Array.from({ length: Number(formData.get("pairCount") ?? 0) })
     .map((_, index) => ({
       id: String(formData.get(`pairId-${index}`) ?? ""),
@@ -260,10 +260,10 @@ export async function updateSettings(roomCode: string, formData: FormData) {
   ]);
 
   emitRoomUpdate(room.code);
-  redirect(`/room/${room.code}`);
+  redirect(`/room/${room.code}?player=${encodeURIComponent(playerId)}`);
 }
 
-export async function startRound(roomCode: string) {
+export async function startRound(roomCode: string, playerId: string) {
   const room = await prisma.room.findUniqueOrThrow({
     where: { code: normalizeRoomCode(roomCode) },
     include: {
@@ -321,10 +321,10 @@ export async function startRound(roomCode: string) {
   });
 
   emitRoomUpdate(room.code);
-  redirect(`/game/${room.code}`);
+  redirect(`/game/${room.code}?player=${encodeURIComponent(playerId)}`);
 }
 
-export async function advancePhase(roomCode: string) {
+export async function advancePhase(roomCode: string, playerId: string) {
   const room = await prisma.room.findUniqueOrThrow({ where: { code: normalizeRoomCode(roomCode) } });
   const nextPhase =
     room.mode === "OFFLINE"
@@ -341,7 +341,7 @@ export async function advancePhase(roomCode: string) {
 
   await prisma.room.update({ where: { id: room.id }, data: { phase: nextPhase } });
   emitRoomUpdate(room.code);
-  redirect(`/game/${room.code}`);
+  redirect(`/game/${room.code}?player=${encodeURIComponent(playerId)}`);
 }
 
 export async function submitClue(roomCode: string, playerId: string, clueValue: string) {

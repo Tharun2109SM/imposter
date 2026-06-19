@@ -17,7 +17,7 @@ export function RoomSync({
   broadcastOnMount = false
 }: {
   roomCode: string;
-  playerId?: string;
+  playerId: string;
   broadcastOnMount?: boolean;
 }) {
   const pathname = usePathname();
@@ -67,7 +67,7 @@ export function RoomSync({
 
         // If the game has ended, automatically redirect players from /game/ to /room/
         if (pathname?.startsWith("/game/") && room.phase === "LOBBY") {
-          const playerQuery = playerId ? `?player=${encodeURIComponent(playerId)}` : "";
+          const playerQuery = `?player=${encodeURIComponent(playerId)}`;
           const msgQuery = message ? `&message=${encodeURIComponent(message)}` : "";
           router.push(`/room/${roomCode}${playerQuery}${msgQuery}`);
           return;
@@ -79,7 +79,7 @@ export function RoomSync({
           // UNLESS a new round has started.
           const isNewRound = exitedRound !== null && room.currentRound?.number !== undefined && room.currentRound.number !== exitedRound;
           if (!exited || isNewRound) {
-            const playerQuery = playerId ? `?player=${encodeURIComponent(playerId)}` : "";
+            const playerQuery = `?player=${encodeURIComponent(playerId)}`;
             router.push(`/game/${roomCode}${playerQuery}`);
             return;
           }

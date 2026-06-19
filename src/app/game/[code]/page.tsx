@@ -35,13 +35,18 @@ export default async function GamePage({ params, searchParams }: Props) {
 
   const hostPlayerId = room.hostPlayerId ?? room.players.find((roomPlayer) => roomPlayer.isHost)?.id;
   const currentPlayerId = player ?? hostPlayerId ?? room.players[0]?.id;
-  const isHost = currentPlayerId === hostPlayerId || !player;
+  if (!currentPlayerId) notFound();
+  if (!player) {
+    redirect(`/game/${room.code}?player=${encodeURIComponent(currentPlayerId)}`);
+  }
+
+  const isHost = currentPlayerId === hostPlayerId;
   const canDeleteRoom = await canDeleteRoomFromBrowser(
     room.code,
-    player,
+    currentPlayerId,
     cookieStore.get(getHostDeleteCookieName(room.code))?.value
   );
-  const deleteRequesterPlayerId = player && canDeleteRoom ? player : null;
+  const deleteRequesterPlayerId = canDeleteRoom ? currentPlayerId : null;
   const currentAssignment =
     currentRound.assignments.find((assignment) => assignment.playerId === currentPlayerId) ??
     currentRound.assignments[0];
@@ -132,7 +137,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                   </div>
                 </div>
               </div>
-              <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
+              <form action={advancePhaseAction.bind(null, room.code, currentPlayerId)} className="mt-8">
                 <Button type="submit" className="min-h-14 rounded-2xl border-2 border-[#33211D] bg-[linear-gradient(135deg,#F6B73C,#F67A3C)] px-7 text-sm font-black uppercase tracking-[0.1em] text-[#33211D] shadow-[5px_5px_0_#33211D] hover:-translate-y-1 hover:shadow-[7px_8px_0_#33211D,0_0_34px_-14px_rgba(246,183,60,0.82)] dark:border-[#0B080D] dark:bg-[linear-gradient(135deg,#31D7C6,#FF9B42)] dark:text-[#161218] dark:shadow-[5px_5px_0_#0B080D]">
                   Everyone Has Seen Their Word
                 </Button>
@@ -148,24 +153,6 @@ export default async function GamePage({ params, searchParams }: Props) {
                 Waiting for other players
                 <span className="pixel-loader ml-2 inline-block w-10 overflow-hidden text-left">...</span>
               </p>
-            </div>
-          )}
-
-          {room.mode === "OFFLINE" && (
-            <div className="relative z-10 mt-5 flex min-h-12 flex-wrap items-start justify-center gap-2">
-              {room.players.filter(p => !p.isHost).map((p) => (
-                <Link
-                  key={p.id}
-                  href={`/game/${room.code}?player=${p.id}`}
-                  className={`rounded-xl border-2 px-4 py-2 text-sm font-black uppercase tracking-[0.08em] shadow-[3px_3px_0_rgba(51,33,29,0.26)] transition hover:-translate-y-0.5 dark:shadow-[3px_3px_0_#0B080D] ${
-                    currentPlayerId === p.id
-                      ? "border-[#33211D] bg-[#F6B73C] text-[#33211D] dark:border-[#0B080D] dark:bg-[#31D7C6] dark:text-[#161218]"
-                      : "border-[#33211D] bg-[#FFF6E8] text-[#233A5A] hover:bg-white dark:border-[#0B080D] dark:bg-[#241B2F] dark:text-[#F7EAD8]"
-                  }`}
-                >
-                  {p.name}
-                </Link>
-              ))}
             </div>
           )}
         </section>
@@ -255,7 +242,7 @@ export default async function GamePage({ params, searchParams }: Props) {
             ) : null}
           </div>
           {isHost ? (
-            <form action={advancePhaseAction.bind(null, room.code)} className="relative z-10 mx-auto w-full max-w-2xl pb-2">
+            <form action={advancePhaseAction.bind(null, room.code, currentPlayerId)} className="relative z-10 mx-auto w-full max-w-2xl pb-2">
               <Button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-7 text-sm uppercase tracking-[0.14em]">
                 End Round
               </Button>
@@ -299,7 +286,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                   );
                 })}
               </div>
-              <form action={advancePhaseAction.bind(null, room.code)} className="relative z-10 mt-10">
+              <form action={advancePhaseAction.bind(null, room.code, currentPlayerId)} className="relative z-10 mt-10">
                 <Button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-7 text-sm uppercase tracking-[0.14em]">Review Clues</Button>
               </form>
             </div>
@@ -365,7 +352,7 @@ export default async function GamePage({ params, searchParams }: Props) {
             </div>
           </div>
           {isHost ? (
-            <form action={advancePhaseAction.bind(null, room.code)} className="relative z-10 mt-8">
+            <form action={advancePhaseAction.bind(null, room.code, currentPlayerId)} className="relative z-10 mt-8">
               <Button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-7 text-sm uppercase tracking-[0.14em]">Open Voting</Button>
             </form>
           ) : null}
@@ -430,7 +417,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                 })}
                 </div>
               </div>
-              <form action={advancePhaseAction.bind(null, room.code)} className="mt-8">
+              <form action={advancePhaseAction.bind(null, room.code, currentPlayerId)} className="mt-8">
                 <Button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-7 text-sm uppercase tracking-[0.14em]">Reveal Results</Button>
               </form>
             </div>
@@ -634,7 +621,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                   <CompleteGameButton roomCode={room.code} playerId={currentPlayerId} />
                 </div>
               ) : (
-                <form action={startRoundAction.bind(null, room.code)} className="mt-8">
+                <form action={startRoundAction.bind(null, room.code, currentPlayerId)} className="mt-8">
                   <Button type="submit" className="broadcast-button min-h-14 w-full rounded-2xl px-7 text-sm uppercase tracking-[0.14em]">
                     Next Round
                   </Button>
