@@ -10,6 +10,7 @@ import { formatRoomCode } from "@/lib/game/room-code";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HowToPlayModal } from "@/components/home/how-to-play-modal";
+import { DetectiveDeskDecor } from "@/components/home/detective-desk-decor";
 
 function SubmitButton({
   children,
@@ -166,8 +167,10 @@ export function LandingForms() {
         />
       </div>
 
+      <DetectiveDeskDecor />
+
       <header className="relative z-40 mx-auto flex h-[4.75rem] w-full max-w-6xl items-center justify-between sm:-translate-x-6 lg:-translate-x-10">
-        <div>
+        <div className="artifact-brand">
           <h1
             className={`display-font text-4xl leading-none sm:text-[3.35rem] ${isDark ? "text-[#F7EAD8] drop-shadow-[3px_3px_0_#0B080D]" : "text-[#33211D]"}`}
             style={
@@ -180,7 +183,14 @@ export function LandingForms() {
           >
             Imposter.
           </h1>
-          <p className={`mt-1.5 text-[0.78rem] font-black uppercase tracking-[0.2em] ${isDark ? "text-[#FF9B42]" : "text-[#775348]"}`}>Created by Tharun.S.M</p>
+          <div className="maker-plaque">
+            <span className="maker-plaque-screw maker-plaque-screw-tl" aria-hidden="true" />
+            <span className="maker-plaque-screw maker-plaque-screw-tr" aria-hidden="true" />
+            <span className="maker-plaque-screw maker-plaque-screw-bl" aria-hidden="true" />
+            <span className="maker-plaque-screw maker-plaque-screw-br" aria-hidden="true" />
+            <span className="maker-plaque-label">Crafted by</span>
+            <span className="maker-plaque-name">Tharun S.M</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
